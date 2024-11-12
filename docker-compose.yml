@@ -1,0 +1,13 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nginx
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - ./conf/.htpasswd:/conf/.htpasswd
+      - ./logs:/logs
+      - ./static:/static
