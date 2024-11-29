@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
-from decouple import config
+from django.contrib.messages import constants as messages  # type: ignore
+from decouple import config  # type: ignore
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,7 +38,7 @@ ALLOWED_HOSTS = config(
 
 # Application definition
 MY_APPS = [
-    # "website",
+    "website",
 ]
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -131,8 +134,78 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+
+STATIC_ROOT = BASE_DIR / "static"
+MEDIA_ROOT = BASE_DIR / "media"
+
+
+STATICFILES_DIRS = [
+    BASE_DIR / "staticfiles",
+]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# messages configuration for notification handeling in pages
+MESSAGE_TAGS = {
+    messages.DEBUG: "info",
+    messages.INFO: "info",
+    messages.SUCCESS: "success",
+    messages.WARNING: "warning",
+    messages.ERROR: "danger",
+}
+
+
+# Email Configurations for production and development
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_USE_TLS = False
+    EMAIL_HOST = "smtp4dev"
+    EMAIL_HOST_USER = ""
+    EMAIL_HOST_PASSWORD = ""
+    EMAIL_PORT = 25
+else:
+    EMAIL_BACKEND = config(
+        "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+    )
+    EMAIL_HOST = config("EMAIL_HOST", default="mail.example.come")
+    EMAIL_PORT = int(config("EMAIL_PORT", default=465))
+    EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="infor@example.com")
+    EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
+    EMAIL_USE_SSL = config("EMAIL_USE_SSL", cast=bool, default=True)
+    EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool, default=False)
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="infor@example.com")
+
+
+# security configs for production
+if config("USE_SSL_CONFIG", cast=bool, default=False):
+    # Https settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+
+    # HSTS settings
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_PRELOAD = True
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    # more security settings
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = "SAMEORIGIN"
+    SECURE_REFERRER_POLICY = "strict-origin"
+    USE_X_FORWARDED_HOST = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+}
