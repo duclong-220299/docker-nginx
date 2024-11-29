@@ -10,9 +10,9 @@ services:
     volumes:
       - ./conf/.htpasswd:/conf/.htpasswd
       - ./logs:/logs
-      - ./static:/static
-      - ./private:/private
-      - ./internal:/internal
+      - ./src/static:/static
+      - ./src/private:/private
+      - ./src/internal:/internal
   db:
     container_name: db
     image: postgres:alpine
