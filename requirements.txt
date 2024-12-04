@@ -2,6 +2,7 @@
 django >3.2,<3.3
 Pillow
 djangorestframework
+requests
 
 # env controlls
 python-decouple

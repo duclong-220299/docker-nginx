@@ -1,16 +1,11 @@
-from rest_framework.response import Response
-from django.http import HttpResponse, HttpResponseRedirect
-import requests
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 
 
-def download(request, file_name):
-    print("file_name", file_name)
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(
-            "/admin/login/?next=/api/download/{}".format(file_name)
-        )
+@login_required(login_url="/admin/login/")
+def download(request, file_name: str) -> HttpResponse:
     response = HttpResponse()
     del response["Content-Type"]
-    response["X-Access-Redirect"] = "/internal/"
-    response["Content-Disposition"] = "attachment; filename='%s'" % file_name
+    response["X-Accel-Redirect"] = f"/internal/{file_name}"
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
     return response
